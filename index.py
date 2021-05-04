@@ -1,5 +1,51 @@
-from data_retrive import data_retrive
+from data_managment import *
+from sklearn import metrics
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.neural_network import MLPClassifier
 
-data_retrive()
+archivo = "PublicidadRedesSociales.csv"
+archivo_test = "pronosticoNuevos_RS.csv"
 
-print("Hola Mundo index.py")
+drops = ["User ID"]  # Dropeo esto porque no hace falta el ID
+cat_data = []   # Datos categoricos que deben ser transformados a
+                # cuantitativos para ser más fácilmente manejados
+bin_data = ["Gender"]   # Datos que deben ser transformados a binatrio porque es más
+                        # facil de manejar que como strings o bool
+target_var = "Purchased"
+scal_data = ['Age', 'EstimatedSalary']
+
+datos = pre_processing(archivo, drops, cat_data, bin_data, scal_data)
+
+# Separo las variables a evaluar y la que representa un 'target'
+# y = target; x = explanatory
+y = datos[target_var].copy()
+x = datos.drop([target_var], axis=1)
+
+# Divido los datos entre test y entrenamiento para ser utilizados luego
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3)
+
+# Almaceno los reusltados de la regresión logística y redes neuronales
+modelo_logistico = LogisticRegression(random_state=1)
+modelo_NN = MLPClassifier(max_iter=1000, random_state=1)
+modelo_logistico.fit(x_train, y_train)
+modelo_NN.fit(x_train, y_train)
+
+# Calculo la predicción de resultados usando el test data
+y_pred_log = pd.Series(modelo_logistico.predict(x_test))
+y_pred_NN = pd.Series(modelo_NN.predict(x_test))
+y_test = y_test.reset_index(drop=True)
+z_log = pd.concat([y_test,y_pred_log], axis=1)
+z_NN = pd.concat([y_test,y_pred_NN], axis=1)
+z_log.columns = ['True', 'Prediction']
+z_NN.columns = ['True', 'Prediction']
+
+print("Resultados Reg. Logística")
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred_log))
+print("Precision:", metrics.precision_score(y_test, y_pred_log))
+print("Recall:", metrics.recall_score(y_test, y_pred_log))
+print("--------------------------------------------------------------------------")
+print("Resultados Redes Neuronales")
+print("Accuracy:", metrics.accuracy_score(y_test, y_pred_NN))
+print("Precision:", metrics.precision_score(y_test, y_pred_NN))
+print("Recall:", metrics.recall_score(y_test, y_pred_NN))
