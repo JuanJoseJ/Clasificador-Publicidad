@@ -3,6 +3,9 @@ from sklearn import metrics
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.neural_network import MLPClassifier
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 archivo = "PublicidadRedesSociales.csv"
 archivo_test = "pronosticoNuevos_RS.csv"
@@ -10,7 +13,7 @@ archivo_test = "pronosticoNuevos_RS.csv"
 drops = ["User ID"]  # Dropeo esto porque no hace falta el ID
 cat_data = []   # Datos categoricos que deben ser transformados a
                 # cuantitativos para ser más fácilmente manejados
-bin_data = ["Gender"]   # Datos que deben ser transformados a binatrio porque es más
+bin_data = ["Gender"]   # Datos que deben ser transformados a binario porque es más
                         # facil de manejar que como strings o bool
 target_var = "Purchased"
 scal_data = ['Age', 'EstimatedSalary']
@@ -49,3 +52,23 @@ print("Resultados Redes Neuronales")
 print("Accuracy:", metrics.accuracy_score(y_test, y_pred_NN))
 print("Precision:", metrics.precision_score(y_test, y_pred_NN))
 print("Recall:", metrics.recall_score(y_test, y_pred_NN))
+
+cnf_matrix = metrics.confusion_matrix(y_test, y_pred_log)
+
+labels = [0, 1]
+fig, ax = plt.subplots()
+tick_marks = np.arange(len(labels))
+plt.xticks(tick_marks, labels)
+plt.yticks(tick_marks, labels)
+
+sns.set()
+# create heatmap
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu", fmt='g')
+ax.xaxis.set_label_position("top")
+plt.title('Confusion matrix', y=1.1)
+plt.ylabel('True')
+plt.xlabel('Predicted')
+
+plt.show()
+
+
