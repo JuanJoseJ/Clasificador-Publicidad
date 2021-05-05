@@ -20,6 +20,7 @@ scal_data = ['Age', 'EstimatedSalary']
 
 datos = pre_processing(archivo, drops, cat_data, bin_data, scal_data)
 
+
 # Separo las variables a evaluar y la que representa un 'target'
 # y = target; x = explanatory
 y = datos[target_var].copy()
@@ -71,4 +72,44 @@ plt.xlabel('Predicted')
 
 plt.show()
 
+# CON ARCHIVO NUEVO
+datos_test = pre_processing(archivo_test, drops, cat_data,bin_data,scal_data)
 
+# Separo las variables a evaluar y la que representa un 'target'
+# y = target; x = explanatory
+y_test2 = datos_test[target_var].copy()
+x_test2 = datos_test.drop([target_var], axis=1)
+
+# Calculo la predicción de resultados usando el test data
+y_pred2_log = pd.Series(modelo_logistico.predict(x_test2))
+y_pred2_NN = pd.Series(modelo_NN.predict(x_test2))
+
+
+print()
+print("Resultados Reg. Logística con datos nuevos")
+print("Accuracy:", metrics.accuracy_score(y_test2, y_pred2_log))
+print("Precision:", metrics.precision_score(y_test2, y_pred2_log))
+print("Recall:", metrics.recall_score(y_test2, y_pred2_log))
+print("--------------------------------------------------------------------------")
+print("Resultados Redes Neuronales con datos nuevos")
+print("Accuracy:", metrics.accuracy_score(y_test2, y_pred2_NN))
+print("Precision:", metrics.precision_score(y_test2, y_pred2_NN))
+print("Recall:", metrics.recall_score(y_test2, y_pred2_NN))
+
+cnf_matrix = metrics.confusion_matrix(y_test2, y_pred2_log)
+
+labels = [0, 1]
+fig, ax = plt.subplots()
+tick_marks = np.arange(len(labels))
+plt.xticks(tick_marks, labels)
+plt.yticks(tick_marks, labels)
+
+sns.set()
+# create heatmap
+sns.heatmap(pd.DataFrame(cnf_matrix), annot=True, cmap="YlGnBu", fmt='g')
+ax.xaxis.set_label_position("top")
+plt.title('Confusion matrix with new data', y=1.1)
+plt.ylabel('True')
+plt.xlabel('Predicted')
+
+plt.show()
